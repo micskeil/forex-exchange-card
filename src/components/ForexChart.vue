@@ -1,53 +1,140 @@
 <template>
-    <div class="card">
-        <div class="card--header">
-            <div class="card--header--flag"></div>
-            <div class="card--header--flag"></div>
-            <h3 class="card--header--source">Forex.com</h3>
-        </div>
-        <div class="card--info">
-            <div class="card--info--currencies">USD/EUR</div>
-            <div class="card--info--price">
-                <div class="card--info--price--rate">$113.60</div>
-                <div class="card--info--price--diff"> + 4.63 (+3.42%)</div>
-            </div>
-        </div>
-    </div>    
+  <div class="chart-container w-max-full flex">
+    <Line
+      ref="chart"
+      :key="chartkey"
+      :chart-data="chartData"
+      :chart-options="chartOptions"
+      :css-classes="'w-full flex-1 w-max-full'"
+    />
+  </div>
 </template>
 
-<style lang="postcss" scoped>
-    .card {
-        @apply flex flex-col m-2 md:m-4 lg:m-4 rounded-2xl shadow-xl;
-        height: 450px;
-    }
-    .card--header {
-        @apply flex flex-row mt-2 md:mt-4 lg:mt-8 mx-2 md:mx-4; 
-    }
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { Line } from 'vue-chartjs';
 
-    .card--header--flag {
-        @apply w-8 h-8 lg:w-10 lg:h-10  bg-blue-200 rounded-full  mx-2;
-    }
+import {
+    Chart as ChartJS,
+    Title,
+    Tooltip,
+    Legend,
+    LineElement,
+    LinearScale,
+    PointElement,
+    CategoryScale,
+    Filler
+} from 'chart.js'
 
-    .card--header--source {
-        @apply h-8 lg:h-10 w-fit font-bold text-gray-600 bg-gray-200 rounded-3xl px-4 mx-2 align-middle py-0.5 lg:py-1.5; 
-    }
+ChartJS.register(
+    Title,
+    Tooltip,
+    Legend,
+    LineElement,
+    LinearScale,
+    PointElement,
+    CategoryScale,
+    Filler
+)
 
-    .card--info {
-        @apply flex justify-between mx-2 md:mx-4;
-    }
 
-    .card--info--currencies {
-        @apply font-bold mx-2 my-2 md:my-4 text-lg lg:text-4xl;
-    }
-    .card--info--price {
-        @apply mx-2 my-2 md:my-4 flex flex-col; 
-    }
+const props = defineProps({
+    graphData: {
+        default: null,
+        type: Object,
+    },
+});
 
-    .card--info--price--rate {
-        @apply text-right font-semibold text-xl lg:text-4xl;
-    }
+const chart = ref();
+const chartkey = ref(0);
+let gradient = ref(null);
 
-    .card--info--price--diff {
-        @apply text-right font-bold text-base lg:text-xl mt-2 lg:mt-4 text-green-500;
+
+// We have to rerender the chart for resize
+onMounted(() => {
+    window.addEventListener('resize', () => {
+        chartkey.value++;
+    });
+
+    const canvas = document.querySelector('canvas');
+    const ctx = canvas.getContext('2d');
+    gradient.value = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.value.addColorStop(0, '#e4fac0');   
+    gradient.value.addColorStop(1, 'rgba(255,255,255,1)');
+    
+
+    console.log(gradient);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize');
+});
+
+
+const chartData = computed(() => {
+    return {
+        labels: props.graphData,
+        datasets: [ {
+                data: props.graphData,
+                borderColor: "#87c81e",
+                backgroundColor: gradient.value,
+                fill: true,
+                
+            }
+        ]}
+});
+
+
+const chartOptions = computed(() => {
+    return {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 3,
+        interaction: {
+            intersect: false,
+        },
+        animations: {
+            tension: {
+                duration: 2000,
+                easing: 'linear',
+                from: 1,
+                to: 0
+            }
+        },
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                enabled: false,
+            },
+            filler: {
+                propagate: false,
+            },
+        }, 
+        scales: {
+            y: {
+                display: false,
+            },
+            x: {
+                display: false,
+            }
+        }, 
+        elements: {
+            point: {
+                radius: 0,
+                borderWidth: 0,
+            },
+            line: {
+                fill: "start"
+            }
+        }
     }
+})
+
+      
+</script>
+
+<style lang="postcss">
+    
 </style>
