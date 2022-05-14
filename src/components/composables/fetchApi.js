@@ -1,25 +1,27 @@
 import axios from 'axios';
 
 const fetchUrl = "https://finnhub.io/api/v1/";
-const apiKey =  `&token=sandbox_c9u1epiad3i9vd5jcqfg`; // put it to env variable later
+const apiKey =  import.meta.env.VITE_FINNHUB_API_KEY; // put it to env variable later
 
 
 
 export const getAllExchanges = async () => {
     try {
-        const response = await axios.get(`${fetchUrl}forex/exchange?${apiKey}`);
+        const response = await axios.get(`${fetchUrl}forex/exchange?token=${apiKey}`);
         return response.data; 
     } catch (e) {
         console.log(e);
+        throw new Error(e);
     }
 }
 
 export const getAllSymbols = async (exchange) => {
     try {
-        const response = await axios.get(`${fetchUrl}forex/symbol?exchange=${exchange}${apiKey}`);
+        const response = await axios.get(`${fetchUrl}forex/symbol?exchange=${exchange}&token=${apiKey}`);
         return response.data;
     } catch (e) {
         console.log(e);
+        throw new Error(e);
     }
 }
 
@@ -57,10 +59,11 @@ export const getRates = async (symbol, scale) => {
     // We have to deduct an extra minute since the Api has no recent data
     const currentUnixTimeStamp = Math.floor(new Date().getTime()/1000 - 60);
     try {
-        const response = await axios.get(`${fetchUrl}forex/candle?symbol=${symbol}&resolution=${scales[scale].resolution}&from=${scales[scale].date()}&to=${currentUnixTimeStamp}${apiKey}`
+        const response = await axios.get(`${fetchUrl}forex/candle?symbol=${symbol}&resolution=${scales[scale].resolution}&from=${scales[scale].date()}&to=${currentUnixTimeStamp}&token=${apiKey}`
         );
         return response.data;
     } catch (e) {
         console.log(e);
+        throw new Error(e);
     }
 }
