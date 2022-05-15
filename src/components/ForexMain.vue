@@ -44,10 +44,12 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
 import ForexCard from './ForexCard.vue';
 
+import { ref, watch, onUnmounted } from 'vue';
 import { getAllExchanges, getAllSymbols, getRates } from './composables/fetchApi.js'
+
+import {subscribeToSymbol, unsubscribeFromSymbol} from './composables/socketUtils';
 
 const exchanges = ref([]);
 const symbols = ref([]);
@@ -56,6 +58,7 @@ const selectedSymbol = ref(null);
 const graphData = ref([]);
 const selectedScale = ref("1M");
 
+// We have to load the exchanges first
 async function getExchanges() {
     const allExchanges = await getAllExchanges();
     allExchanges.forEach(element => exchanges.value.push(element));
@@ -63,7 +66,8 @@ async function getExchanges() {
 }
 getExchanges();
 
-async function reDrawChart() {
+// Function to load the new data if any settings changes
+async function loadExchangeData() {
     graphData.value = [];
     const fullSymbol = selectedExchange.value + ':' + selectedSymbol.value.displaySymbol.replace("/", "_");
     const data = await getRates(
@@ -76,22 +80,37 @@ async function reDrawChart() {
 
 function changeScale(event) {
     selectedScale.value = event;
-    reDrawChart();
+    loadExchangeData();
 }
 
+
+//This watch function load the symbols and the data when the exchange changes
 watch(selectedExchange, async () => {
     selectedSymbol.value = null;
     graphData.value = [];
     const allSymbols = await getAllSymbols(selectedExchange.value);
     symbols.value = allSymbols;
-    selectedSymbol.value = symbols.value[0];
+    selectedSymbol.value = symbols.value[symbols.value.length-1];
 })
 
-
-watch(selectedSymbol, async () => {
-    if(!selectedSymbol.value) return;
-    reDrawChart();
+//This watch function load the graph data after symbol is changed
+watch(selectedSymbol, async (value, oldValue) => {
+    if(!value?.symbol) return;
+    if(oldValue?.symbol) {
+        unsubscribeFromSymbol(oldValue.symbol);
+    }
+    loadExchangeData();
+    subscribeToSymbol(value.symbol, (event) => {
+        const msg = JSON.parse(event.data);
+        if(msg.type === 'trade') {
+            graphData.value = [...graphData.value, msg.data[0].p ];
+        }
+    });
 })
+
+onUnmounted(() => {
+    unsubscribeFromSymbol(selectedSymbol.value.symbol);
+})  
 
 </script>
 

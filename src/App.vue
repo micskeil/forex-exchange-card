@@ -1,10 +1,10 @@
 <template>
   <main class="main">
     <div class="header">
-      <h1 class="header--title">
+      <h1 class="header__title">
         Forex Exchange
       </h1>
-      <h3 class="header--subtitle">
+      <h3 class="header__subtitle">
         Checkout the current price on different exchanges for a currency pair
       </h3>
     </div>
@@ -15,11 +15,12 @@
 </template>
 
 <script setup>
-    import ForexMain from './components/ForexMain.vue'
+    import ForexMain from './components/ForexMain.vue';
 </script>
 
 
 <style lang="postcss">
+/* currency-flag style import */
 @import "../node_modules/currency-flags/dist/currency-flags.css";
 
 body {
@@ -37,14 +38,14 @@ body {
 
     .header {
         @apply mx-2 md:mx-4 lg:mx-16;
-    }
 
-    .header--title {
-        @apply text-xl md:text-3xl lg:text-7xl font-bold;
-    }
+        &__title {
+            @apply text-xl md:text-3xl lg:text-7xl font-bold;
+        }
 
-    .header--subtitle {
-        @apply text-base md:text-xl lg:text-3xl font-bold text-gray-500 mt-2;
+        &__subtitle {
+            @apply text-base md:text-xl lg:text-3xl font-bold text-gray-500 mt-2;
+        }
     }
 
     .forex-exchange {
