@@ -14,9 +14,11 @@ See [Vite Configuration Reference](https://vitejs.dev/config/).
 
 Create a .env file in the root directory of your project.
 
-Add this 2 variable to it: 
-VITE_FINNHUB_API_KEY=<your finnhub api key>
-VITE_FINNHUB_SECRET=<your finnhub websocket secret key>
+Add this 2 variable to it:
+
+VITE_FINNHUB_API_KEY=your finnhub api key
+  
+VITE_FINNHUB_SECRET=your finnhub websocket secret key
 
 ```
 ```sh
