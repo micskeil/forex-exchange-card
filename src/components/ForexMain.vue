@@ -80,6 +80,17 @@ async function loadExchangeData() {
 
 function changeScale(event) {
     selectedScale.value = event;
+    console.log(event);
+    if(event === "LIVE") {    
+        graphData.value = [];
+        subscribeToSymbol(selectedSymbol.value.symbol, (event) => {
+                const msg = JSON.parse(event.data);
+                if(msg.type === 'trade') {
+                    graphData.value = [...graphData.value, msg.data[0].p ];
+                }
+        });
+        return;
+    } 
     loadExchangeData();
 }
 
@@ -96,17 +107,24 @@ watch(selectedExchange, async () => {
 //This watch function load the graph data after symbol is changed
 watch(selectedSymbol, async (value, oldValue) => {
     if(!value?.symbol) return;
-    if(oldValue?.symbol) {
+    if(oldValue?.symbol && selectedScale.value === "LIVE") {
         unsubscribeFromSymbol(oldValue.symbol);
+        graphData.value = [];
     }
-    loadExchangeData();
-    subscribeToSymbol(value.symbol, (event) => {
-        const msg = JSON.parse(event.data);
-        if(msg.type === 'trade') {
-            graphData.value = [...graphData.value, msg.data[0].p ];
-        }
-    });
+    if(value?.symbol && selectedScale.value === "LIVE") {
+        subscribeToSymbol(value.symbol, (event) => {
+            const msg = JSON.parse(event.data);
+            if(msg.type === 'trade') {
+                graphData.value = [...graphData.value, msg.data[0].p ];
+            }
+        });
+        return;
+    }
+    if(selectedScale.value !== "LIVE") {
+        loadExchangeData();
+    }
 })
+
 
 onUnmounted(() => {
     unsubscribeFromSymbol(selectedSymbol.value.symbol);

@@ -48,11 +48,15 @@ export const scales = Object.freeze({
     "1Y": {
         date: () => Math.floor(new Date().getTime()/1000)-(365*7*24*60+1)*60,
         resolution: "D"
+    },
+    "LIVE": {
+        resolution: "LIVE"
     }
 });
 
 
 export const getRates = async (symbol, scale) => {
+    if(scales[scale].resolution === "LIVE") return;
     // We have to deduct an extra minute since the Api has no recent data
     const currentUnixTimeStamp = Math.floor(new Date().getTime()/1000 - 60);
     try {
