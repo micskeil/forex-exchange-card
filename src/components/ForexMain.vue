@@ -69,9 +69,8 @@ getExchanges();
 // Function to load the new data if any settings changes
 async function loadExchangeData() {
     graphData.value = [];
-    const fullSymbol = selectedExchange.value + ':' + selectedSymbol.value.displaySymbol.replace("/", "_");
     const data = await getRates(
-        fullSymbol, 
+        symbols.value.symbol, 
         selectedScale.value
     );
     // We add only the closing price here!!
@@ -80,7 +79,6 @@ async function loadExchangeData() {
 
 function changeScale(event) {
     selectedScale.value = event;
-    console.log(event);
     if(event === "LIVE") {    
         graphData.value = [];
         subscribeToSymbol(selectedSymbol.value.symbol, (event) => {
@@ -99,9 +97,16 @@ function changeScale(event) {
 watch(selectedExchange, async () => {
     selectedSymbol.value = null;
     graphData.value = [];
-    const allSymbols = await getAllSymbols(selectedExchange.value);
-    symbols.value = allSymbols;
-    selectedSymbol.value = symbols.value[symbols.value.length-1];
+    symbols.value = await getAllSymbols(selectedExchange.value);
+
+    // check if we have EUR/HUF and make it default (this is just for fun and the live data is better for representation)
+    const indexOfEURHUF = symbols.value.findIndex(element => element.displaySymbol === 'EUR/HUF');
+    
+    if(indexOfEURHUF !== -1) {
+        selectedSymbol.value = symbols.value[indexOfEURHUF];
+    } else {
+        selectedSymbol.value = symbols.value[symbols.value.length-1];
+    }
 })
 
 //This watch function load the graph data after symbol is changed
